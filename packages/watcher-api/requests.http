@@ -1,0 +1,20 @@
+GET http://localhost:3000
+
+### PRONAC ###
+POST http://localhost:3000 HTTP/1.1 
+content-type: application/json
+
+{
+  "query": "Pronac"
+}
+
+###
+POST http://localhost:3000 HTTP/1.1 
+content-type: application/json
+
+{
+  "query": "incentivo fiscal"
+}
+
+###
+POST http://localhost:3000/63698f696791189368f20c8d/scrape HTTP/1.1

@@ -1,0 +1,47 @@
+version: '3'
+
+# Define services, mongodb and nodejs
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: on-failure
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+    volumes:
+      - ./dbdata-production:/data/db
+  
+  watcher-api:
+    image: fabianosant/law-watcher-api:latest
+    container_name: watcher-api
+    restart: on-failure
+    command: npm run start:prod
+    environment:
+      - PORT=5000
+      - DB_NAME=${DB_NAME}
+      - MONGO_ROOT_USER=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MAILER_TRANSPORT=${MAILER_TRANSPORT}
+      - MAILER_FROM=${MAILER_FROM}
+    ports:
+      - "5000:5000"
+      - "9229:9229"
+    depends_on:
+      - mongodb
+  
+  watcher-ui:
+    image: fabianosant/law-watcher-ui:latest
+    container_name: watcher-ui
+    command: npm run preview
+    restart: on-failure
+    environment:
+      - VITE_BASE_API_URL=http://watcher-api:5000
+    ports:
+      - "80:4173"
+    depends_on:
+      - watcher-api

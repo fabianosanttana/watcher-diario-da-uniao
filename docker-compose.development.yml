@@ -1,0 +1,58 @@
+version: '3'
+
+# Define services, mongodb and nodejs
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: on-failure
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+    volumes:
+      - ./data:/data/db
+  
+  watcher-api:
+    build: 
+      context: ./packages/watcher-api
+      target: development
+    container_name: watcher-api
+    command: npm run start:debug
+    restart: on-failure
+    environment:
+      - PORT=5000
+      - DB_NAME=law-watcher-development
+      - MONGO_ROOT_USER=localuser
+      - MONGO_ROOT_PASSWORD=localpassword
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MAILER_TRANSPORT=
+      - MAILER_FROM='"Diário da união - Observador" <>'
+    volumes:
+      - ./packages/watcher-api:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "5000:5000"
+      - "9229:9229"
+    depends_on:
+      - mongodb
+  
+  watcher-ui:
+    build: 
+      context: ./packages/watcher-ui
+      target: development
+    container_name: watcher-ui
+    command: npm run dev
+    restart: on-failure
+    environment:
+      - PORT=3000
+      - VITE_BASE_API_URL=http://localhost:5000
+    volumes:
+      - ./packages/watcher-ui:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - watcher-api

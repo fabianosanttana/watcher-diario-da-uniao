@@ -1,0 +1,9 @@
+node_modules
+.DS_Store
+data
+.env
+dbdata
+docker-compose.local.yml
+dbdatalocal
+envi
+dbdata-production
